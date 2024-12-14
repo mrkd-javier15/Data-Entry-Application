@@ -1,7 +1,11 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from tkinter import PhotoImage
 from process_data import add_pet, remove_pet, update_pet, fetch_pets
+from process_data import export_pets_to_csv
+from process_data import PET_FILE
+from process_data import import_pets_from_csv
+
 
 class PetAdoptionGUI:
     def __init__(self, root):
@@ -28,7 +32,7 @@ class PetAdoptionGUI:
         tk.Label(self.input_frame, text="Gender", bg="#e8f8ff").grid(row=4, column=0, sticky="w", pady=5)
         tk.Label(self.input_frame, text="Weight (kg)", bg="#e8f8ff").grid(row=5, column=0, sticky="w", pady=5)
         tk.Label(self.input_frame, text="Description", bg="#e8f8ff").grid(row=6, column=0, sticky="w", pady=5)
-
+        
         self.entries = {}
         for idx, field in enumerate([
             "pet_id", "name", "species", "age", "gender", "weight", "description"
@@ -38,13 +42,20 @@ class PetAdoptionGUI:
 
         self.action_buttons = tk.Frame(self.input_frame, bg="#e8f8ff", pady=10)
         self.action_buttons.grid(row=7, column=0, columnspan=2)
+        
 
         tk.Button(self.action_buttons, text="Add Pet", command=self.add_pet, bg="#4caf50", fg="#ffffff", width=15).pack(side=tk.LEFT, padx=5)
         tk.Button(self.action_buttons, text="Update Pet", command=self.update_pet, bg="#ffa500", fg="#ffffff", width=15).pack(side=tk.LEFT, padx=5)
         tk.Button(self.action_buttons, text="Delete Pet", command=self.delete_pet, bg="#f44336", fg="#ffffff", width=15).pack(side=tk.LEFT, padx=5)
+       
+        self.action_buttons = tk.Frame(self.input_frame, bg="#e8f8ff", pady=10)
+        self.action_buttons.grid(row=8, column=0, columnspan=2)
+        
+        tk.Button(self.action_buttons, text="Export to CSV", command=self.export_to_csv, bg="#2196f3", fg="#ffffff", width=15).pack(side=tk.LEFT, padx=5)
+        tk.Button(self.action_buttons, text="Import CSV", command=self.import_csv, bg="#673ab7", fg="#ffffff", width=15).pack(side=tk.LEFT, padx=5)
 
         self.photo_frame = tk.Frame(self.input_frame, bg="#e8f8ff", pady=10)
-        self.photo_frame.grid(row=8, column=0, columnspan=2)
+        self.photo_frame.grid(row=9, column=0, columnspan=2)
 
         # Load and display the image
         try:
@@ -134,21 +145,44 @@ class PetAdoptionGUI:
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-    def refresh_table(self):
-        # Clear existing rows
+    def refresh_table(self, pets=None):
+    # Clear existing rows
         for row in self.tree.get_children():
             self.tree.delete(row)
 
-        # Fetch and insert pets into the table with alternating colors
-        pets = fetch_pets()
+    # Fetch pets if none provided
+        pets = pets or fetch_pets()
         for index, pet in enumerate(pets):
             tag = "oddrow" if index % 2 == 0 else "evenrow"
             self.tree.insert("", "end", values=pet, tags=(tag,))
 
-
     def clear_inputs(self):
         for entry in self.entries.values():
             entry.delete(0, tk.END)
+
+    def export_to_csv(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+        if file_path:
+            try:
+                export_pets_to_csv(file_path)
+            # Clear the table and display a message
+                self.refresh_table([])  # Pass an empty list to ensure the table is cleared
+                messagebox.showinfo("Success", "Data exported to CSV successfully and table cleared!")
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+
+
+
+    def import_csv(self):
+        file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        if file_path:
+            try:
+                pets = import_pets_from_csv(file_path)
+            # Clear current table and display imported data
+                self.refresh_table(pets)
+                messagebox.showinfo("Success", "Data imported and displayed successfully!")
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
 if __name__ == "__main__":
     root = tk.Tk()

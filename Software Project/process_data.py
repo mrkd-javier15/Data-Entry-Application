@@ -82,3 +82,31 @@ def update_pet(pet_id, name=None, species=None, age=None, gender=None, weight=No
             raise Exception(f"Error updating pet: {e}")
     else:
         raise Exception("Pet ID not found.")
+
+def export_pets_to_csv(file_path):
+    """Export all pets to a CSV file."""
+    try:
+        pets = fetch_pets()
+        with open(file_path, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(pets)
+    except Exception as e:
+        raise Exception(f"Error exporting pets to CSV: {e}")
+
+def import_pets_from_csv(file_path):
+    """Import pets from a CSV file."""
+    try:
+        with open(file_path, 'r') as file:
+            reader = csv.reader(file)
+            pets = list(reader)
+
+        # Check if all pets have the correct number of fields (7 fields for each pet)
+        if not all(len(pet) == 7 for pet in pets):
+            raise ValueError("Invalid data format in CSV file.")
+
+        # Return the imported pets data instead of saving it directly
+        return pets
+
+    except Exception as e:
+        raise Exception(f"Error importing pets from CSV: {e}")
+
