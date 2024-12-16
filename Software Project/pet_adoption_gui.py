@@ -62,13 +62,13 @@ class PetAdoptionGUI:
             image_path = "pic.png"  # Replace with the path to your image
             self.pet_image = PhotoImage(file=image_path)
             
-            # Resize the image if necessary (manually adjust in advance or use a specific file size)
-            self.pet_image = self.pet_image.subsample(3, 3)  # Resize by reducing the image size (factor of 2)
+           
+            self.pet_image = self.pet_image.subsample(3, 3) 
 
             self.image_label = tk.Label(self.photo_frame, image=self.pet_image, bg="#e8f8ff")
             self.image_label.pack()
         except Exception:
-            pass  # No image displayed if loading fails
+            pass  
 
 
     def create_table_section(self):
@@ -165,8 +165,8 @@ class PetAdoptionGUI:
         if file_path:
             try:
                 export_pets_to_csv(file_path)
-            # Clear the table and display a message
-                self.refresh_table([])  # Pass an empty list to ensure the table is cleared
+           
+                self.refresh_table([])  
                 messagebox.showinfo("Success", "Data exported to CSV successfully and table cleared!")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
