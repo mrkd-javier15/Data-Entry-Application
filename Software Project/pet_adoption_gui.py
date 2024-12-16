@@ -5,6 +5,7 @@ from process_data import add_pet, remove_pet, update_pet, fetch_pets
 from process_data import export_pets_to_csv
 from process_data import PET_FILE
 from process_data import import_pets_from_csv
+from datetime import datetime
 
 
 class PetAdoptionGUI:
@@ -160,29 +161,40 @@ class PetAdoptionGUI:
         for entry in self.entries.values():
             entry.delete(0, tk.END)
 
+
     def export_to_csv(self):
-        file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            initialfile=f"pets_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            filetypes=[("CSV files", "*.csv")]
+        )
         if file_path:
             try:
                 export_pets_to_csv(file_path)
-           
-                self.refresh_table([])  
-                messagebox.showinfo("Success", "Data exported to CSV successfully and table cleared!")
+                messagebox.showinfo("Success", "Data exported to CSV successfully!")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
+
 
 
 
     def import_csv(self):
         file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
         if file_path:
+            choice = messagebox.askyesnocancel(
+                "Import Options",
+                "Do you want to overwrite existing data? (Yes to overwrite, No to merge, Cancel to abort)"
+            )
+
+            if choice is None:  # Cancel
+                return
             try:
-                pets = import_pets_from_csv(file_path)
-            # Clear current table and display imported data
-                self.refresh_table(pets)
-                messagebox.showinfo("Success", "Data imported and displayed successfully!")
+                pets = import_pets_from_csv(file_path, overwrite=choice)
+                self.refresh_table(pets if choice else fetch_pets())
+                messagebox.showinfo("Success", "Data imported successfully!")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
+
 
 if __name__ == "__main__":
     root = tk.Tk()

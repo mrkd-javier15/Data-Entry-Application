@@ -93,20 +93,32 @@ def export_pets_to_csv(file_path):
     except Exception as e:
         raise Exception(f"Error exporting pets to CSV: {e}")
 
-def import_pets_from_csv(file_path):
-    """Import pets from a CSV file."""
+def import_pets_from_csv(file_path, overwrite=False):
+    """Import pets from a CSV file and optionally overwrite current data."""
     try:
         with open(file_path, 'r') as file:
             reader = csv.reader(file)
             pets = list(reader)
 
-        # Check if all pets have the correct number of fields (7 fields for each pet)
         if not all(len(pet) == 7 for pet in pets):
             raise ValueError("Invalid data format in CSV file.")
 
-        # Return the imported pets data instead of saving it directly
-        return pets
+        if overwrite:
+            # Overwrite the PET_FILE
+            with open(PET_FILE, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(pets)
+        else:
+            # Merge data into the PET_FILE without duplication
+            current_pets = fetch_pets()
+            new_pets = [pet for pet in pets if pet[0] not in [p[0] for p in current_pets]]
 
+            with open(PET_FILE, 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(new_pets)
+
+        return pets
     except Exception as e:
         raise Exception(f"Error importing pets from CSV: {e}")
+
 
